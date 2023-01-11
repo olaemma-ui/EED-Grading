@@ -47,7 +47,7 @@ public class Student {
     private Timestamp createdAt;
 
     @JoinColumn(name = "deptId")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnore
     @ManyToOne(cascade = {CascadeType.REMOVE})
     private Department department;
 

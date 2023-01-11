@@ -14,6 +14,9 @@ public class Scores {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Id private String id;
 
+    @Transient
+    private String matric;
+
     private String course;
 
     private double ca;
@@ -34,7 +37,22 @@ public class Scores {
     @ManyToOne(cascade = CascadeType.ALL)
     private Student student;
 
-//    @ManyToOne
+    @Override
+    public String toString() {
+        return "Scores{" +
+                "id='" + id + '\'' +
+                ", matric='" + matric + '\'' +
+                ", course='" + course + '\'' +
+                ", ca=" + ca +
+                ", practical=" + practical +
+                ", exam=" + exam +
+                ", total=" + total +
+                ", grade=" + grade +
+                ", student=" + student +
+                '}';
+    }
+
+    //    @ManyToOne
 //    @JsonIgnore
 //    private Session session;
 }

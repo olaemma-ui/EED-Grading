@@ -8,17 +8,16 @@ import com.example.project.Repository.ScoreRepo;
 import com.example.project.Repository.StudentRepo;
 import com.example.project.Utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -137,10 +136,18 @@ public class StudentService {
                                     message = "Invalid department!";
                                     departmentRepo.findById(deptId).ifPresent(
                                             department->{
-                                                success(studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
+                                                Page<?> data = studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
                                                         Optional.ofNullable(pageNo).orElse(0),
-                                                        Optional.ofNullable(pageSize).orElse(10)
-                                                )));
+                                                        Optional.ofNullable(pageSize).orElse(10),
+                                                        Sort.by(Sort.Direction.ASC, "matric")
+                                                ));
+                                                success(new HashMap<String, Object>(){{
+                                                    put("content", data.getContent());
+                                                    put("pageNumber", data.getNumber());
+                                                    put("totalPages", data.getTotalPages());
+                                                    put("totalElements", data.getTotalElements());
+                                                    put("last", data.isLast());
+                                                }});
                                             }
                                     );
                                 }
@@ -174,6 +181,7 @@ public class StudentService {
     private Scores setScore(String course, Student student){
         return new Scores(
                 utils.genId(scoreRepo.allId(), new int[]{3,3}),
+                student.getMatric(),
                 ""+course+"",
                 0.0,
                 0.0,

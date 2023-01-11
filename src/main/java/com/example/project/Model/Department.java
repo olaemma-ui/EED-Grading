@@ -32,5 +32,6 @@ public class Department {
     private Session session;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Student> students;
 }
