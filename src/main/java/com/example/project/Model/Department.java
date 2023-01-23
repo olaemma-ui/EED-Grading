@@ -23,10 +23,6 @@ public class Department {
     @Transient
     private String sessionId;
 
-    public String getSessionId() {
-        return this.session.getId();
-    }
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Timestamp createdAt;
 
