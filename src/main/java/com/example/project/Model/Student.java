@@ -57,4 +57,18 @@ public class Student {
     @ManyToOne
     @JsonIgnore
     private Session session;
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id='" + id + '\'' +
+                ", matric='" + matric + '\'' +
+                ", deptId='" + deptId + '\'' +
+                ", lvl='" + lvl + '\'' +
+                ", totalStudent=" + totalStudent +
+                ", createdAt=" + createdAt +
+                ", department=" + department +
+                ", scores=" + scores +
+                '}';
+    }
 }

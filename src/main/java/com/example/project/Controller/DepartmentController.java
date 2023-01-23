@@ -29,8 +29,8 @@ public class DepartmentController {
     }
 
     @GetMapping("list")
-    private ResponseEntity<Response> getAllDept(@RequestParam Integer pageNo, @RequestParam Integer pageSize){
-        return this.departmentService.getAllDepartment(pageNo, pageSize);
+    private ResponseEntity<Response> getAllDept(@RequestParam Integer pageNo, @RequestParam Integer pageSize, @RequestParam String sessionId){
+        return this.departmentService.getAllDepartment(pageNo, pageSize, sessionId);
     }
 
 }

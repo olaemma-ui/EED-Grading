@@ -24,13 +24,19 @@ public class StudentController {
     }
 
     @PostMapping("single/add")
-    public ResponseEntity<Response> addSingleStudent(Map<String, String> studentData){
+    public ResponseEntity<Response> addSingleStudent(@RequestBody Map<String, String> studentData){
         return studentService.addSingleStudent(studentData);
     }
 
     @GetMapping("list")
-    private ResponseEntity<Response> getAllStudent(@RequestParam Integer pageNo, @RequestParam Integer pageSize, @RequestParam String deptId, @RequestParam String level){
-        return studentService.getAllStudent(pageNo, pageSize, deptId, level);
+    private ResponseEntity<Response> getAllStudent(
+            @RequestParam Integer pageNo,
+            @RequestParam Integer pageSize,
+            @RequestParam String deptId,
+            @RequestParam String level,
+            @RequestParam String sessionId
+    ){
+        return studentService.getAllStudent(pageNo, pageSize, deptId, level, sessionId);
     }
 
     @DeleteMapping("delete")

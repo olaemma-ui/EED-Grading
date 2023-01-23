@@ -14,7 +14,6 @@ public class Scores {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Id private String id;
 
-    @Transient
     private String matric;
 
     private String course;
@@ -25,11 +24,23 @@ public class Scores {
 
     private double exam;
 
+    public void setTotal() {
+        this.total = ca + practical + exam;
+    }
+
+    public void setGrade() {
+        this.grade = (total < 25)
+                ? ""
+                : (total < 50)
+                    ? ""
+                    :"";
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private double total;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private double grade;
+    private String grade;
 
     @ToString.Exclude
     @JsonIgnore
@@ -48,7 +59,6 @@ public class Scores {
                 ", exam=" + exam +
                 ", total=" + total +
                 ", grade=" + grade +
-                ", student=" + student +
                 '}';
     }
 

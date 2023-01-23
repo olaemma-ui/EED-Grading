@@ -1,5 +1,6 @@
 package com.example.project.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,9 +26,11 @@ public class Session {
 
 //    @ToString.Exclude
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Student> students;
 
 //    @ToString.Exclude
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Department> departments;
 }

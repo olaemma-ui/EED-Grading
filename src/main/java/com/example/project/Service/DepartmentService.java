@@ -47,7 +47,7 @@ public class DepartmentService {
                 message = "Invalid session!";
                 sessionRepo.findById(department.getSessionId()).ifPresent(
                         session -> {
-                            if (!departmentRepo.findDeptBySession(department.getSessionId(), department.getDeptName(), department.getDeptCode()).isPresent()){
+                            if (!departmentRepo.findDepartment(department.getSessionId(), department.getDeptName(), department.getDeptCode()).isPresent()){
                                 department.setDeptCode(
                                         (department.getDeptCode().length() < 2 )
                                                 ? "0"+department.getDeptCode()
@@ -70,6 +70,7 @@ public class DepartmentService {
 
         return new ResponseEntity<>(new Response(success, responseCode, message, error, data), HttpStatus.OK);
     }
+
 
     public ResponseEntity<Response> deleteDepartment(String deptId){
         reset();
@@ -94,10 +95,12 @@ public class DepartmentService {
         return new ResponseEntity<>(new Response(success, responseCode, message, error, data), HttpStatus.OK);
     }
 
-    public ResponseEntity<Response> getAllDepartment(Integer pageNo, Integer pageSize){
+
+    public ResponseEntity<Response> getAllDepartment(Integer pageNo, Integer pageSize, String sessionId){
         reset();
         try{
-            success(departmentRepo.findAll(
+            success(departmentRepo.findAllDeptBySession(
+                sessionId,
                 PageRequest.of(
                     Optional.of(pageNo).orElse(0),
                     Optional.of(pageSize).orElse(10)

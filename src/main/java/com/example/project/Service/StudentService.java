@@ -5,8 +5,10 @@ import com.example.project.Model.Scores;
 import com.example.project.Model.Student;
 import com.example.project.Repository.DepartmentRepo;
 import com.example.project.Repository.ScoreRepo;
+import com.example.project.Repository.SessionRepo;
 import com.example.project.Repository.StudentRepo;
 import com.example.project.Utils.Utils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
-@Service
+@Service @RequiredArgsConstructor
 public class StudentService {
     private boolean success;
     private String responseCode;
@@ -32,14 +34,15 @@ public class StudentService {
     private final StudentRepo studentRepo;
     private final DepartmentRepo departmentRepo;
     private final ScoreRepo scoreRepo;
+    private final SessionRepo sessionRepo;
 
-    @Autowired
-    StudentService(Utils utils, StudentRepo studentRepo, DepartmentRepo departmentRepo, ScoreRepo scoreRepo){
-        this.utils = utils;
-        this.studentRepo = studentRepo;
-        this.departmentRepo = departmentRepo;
-        this.scoreRepo = scoreRepo;
-    }
+//    @Autowired
+//    StudentService(Utils utils, StudentRepo studentRepo, DepartmentRepo departmentRepo, ScoreRepo scoreRepo){
+//        this.utils = utils;
+//        this.studentRepo = studentRepo;
+//        this.departmentRepo = departmentRepo;
+//        this.scoreRepo = scoreRepo;
+//    }
 
     public ResponseEntity<Response> addStudents(Student student){
         reset();
@@ -72,7 +75,8 @@ public class StudentService {
                     });
                 }else message = "Invalid level!";
             }else message = "Invalid fields!";
-        }catch (Exception e){
+        }
+        catch (Exception e){
             e.printStackTrace();
             message = "Something went wrong";
             responseCode = "500";
@@ -84,9 +88,7 @@ public class StudentService {
     public ResponseEntity<Response> addSingleStudent(Map<String, String> studentData){
         reset();
         try{
-//            Object[] validate = utils.validate(student, new String[]{"id", "scores", "department", "createdAt", "matric"});
-//            error = validate[1];
-//            data = student;
+            data = studentData;
             if (studentData.containsKey("matric") && studentData.containsKey("level") && studentData.containsKey("departmentId")){
                 if (studentData.get("level").equalsIgnoreCase("ND") || studentData.get("level").equalsIgnoreCase("HND")){
                     message = "Invalid department!";
@@ -94,7 +96,7 @@ public class StudentService {
                             department -> {
                                 if (Pattern.matches("([0-9]{2})/([0-9]{2})/([0-9]{4})", studentData.get("matric"))) {
 
-                                    if (studentRepo.findByMatric(studentData.get("matric")).isPresent()){
+                                    if (!studentRepo.findByMatric(studentData.get("matric")).isPresent()){
                                         Student student = new Student();
                                         student.setSession(department.getSession());
 //
@@ -111,11 +113,15 @@ public class StudentService {
                                         studentRepo.save(student);
                                         success(student);
                                     }else message = "Matric already exist!";
-                                }else message = "Invalid matric [00/00/0000]";
+                                }
+                                else message = "Invalid matric [00/00/0000]";
                             });
-                }else message = "Invalid level!";
-            }else message = "All fields are required!";
-        }catch (Exception e){
+                }
+                else message = "Invalid level!";
+            }
+            else message = "All fields are required!";
+        }
+        catch (Exception e){
             e.printStackTrace();
             message = "Something went wrong";
             responseCode = "500";
@@ -124,30 +130,39 @@ public class StudentService {
     }
 
 
-    public ResponseEntity<Response> getAllStudent(Integer pageNo, Integer pageSize, String deptId, String level){
+    public ResponseEntity<Response> getAllStudent(Integer pageNo, Integer pageSize, String deptId, String level, String sessionId){
         reset();
         try{
-            message = "Department is required!";
-            Optional.ofNullable(deptId).ifPresent(
-                    id->{
-                        message = "Level is required!";
-                        Optional.ofNullable(level).ifPresent(
-                                lvl->{
-                                    message = "Invalid department!";
-                                    departmentRepo.findById(deptId).ifPresent(
-                                            department->{
-                                                Page<?> data = studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
-                                                        Optional.ofNullable(pageNo).orElse(0),
-                                                        Optional.ofNullable(pageSize).orElse(10),
-                                                        Sort.by(Sort.Direction.ASC, "matric")
-                                                ));
-                                                success(new HashMap<String, Object>(){{
-                                                    put("content", data.getContent());
-                                                    put("pageNumber", data.getNumber());
-                                                    put("totalPages", data.getTotalPages());
-                                                    put("totalElements", data.getTotalElements());
-                                                    put("last", data.isLast());
-                                                }});
+            message = "Session is required!";
+            Optional.ofNullable(sessionId).ifPresent(
+                    s->{
+                        message = "Department is required!";
+                        Optional.ofNullable(deptId).ifPresent(
+                                id->{
+                                    message = "Level is required!";
+                                    Optional.ofNullable(level).ifPresent(
+                                            lvl->{
+                                                sessionRepo.findById(s).ifPresent(
+                                                        session ->{
+                                                            message = "Invalid department!";
+                                                            departmentRepo.findById(deptId).ifPresent(
+                                                                    department->{
+                                                                        Page<?> data = studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
+                                                                                Optional.ofNullable(pageNo).orElse(0),
+                                                                                Optional.ofNullable(pageSize).orElse(10),
+                                                                                Sort.by(Sort.Direction.ASC, "matric")
+                                                                        ));
+                                                                        success(new HashMap<String, Object>(){{
+                                                                            put("content", data.getContent());
+                                                                            put("pageNumber", data.getNumber());
+                                                                            put("totalPages", data.getTotalPages());
+                                                                            put("totalElements", data.getTotalElements());
+                                                                            put("last", data.isLast());
+                                                                        }});
+                                                                    }
+                                                            );
+                                                        }
+                                                );
                                             }
                                     );
                                 }
@@ -166,10 +181,16 @@ public class StudentService {
     public ResponseEntity<Response> deleteStudent(String studentId){
         reset();
         try {
-//            message = "Student does not exist!";
-            studentRepo.findById(studentId).ifPresent(studentRepo::delete);
-            success(null);
-        }catch (Exception e){
+
+            message = "Student does not exist!";
+            studentRepo.findById(studentId).ifPresent(
+                    student -> {
+                        studentRepo.delete(student);
+                        success(null);
+                    }
+            );
+        }
+        catch (Exception e){
             e.printStackTrace();
             message = "Something went wrong";
             responseCode = "500";
@@ -187,7 +208,7 @@ public class StudentService {
                 0.0,
                 0.0,
                 0.0,
-                0.0,
+                "--",
                 student
 //                , student.getSession()
         );
