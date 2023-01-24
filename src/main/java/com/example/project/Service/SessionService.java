@@ -8,6 +8,7 @@ import com.example.project.Repository.SessionRepo;
 import com.example.project.Repository.StudentRepo;
 import com.example.project.Utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Optional;
 
 @Service
@@ -97,14 +99,18 @@ public class SessionService {
     public ResponseEntity<Response> getAllSession(Integer pageNo, Integer pageSize){
         reset();
         try{
-            success(
-                sessionRepo.findAll(
+            Page<?> data = sessionRepo.findAll(
                     PageRequest.of(
-                        Optional.of(pageNo).orElse(0),
-                        Optional.of(pageSize).orElse(10)
-                    )
-                )
-            );
+                            Optional.of(pageNo).orElse(0),
+                            Optional.of(pageSize).orElse(10)
+                    ));
+            success(new HashMap<String, Object>(){{
+                put("content", data.getContent());
+                put("pageNumber", data.getNumber());
+                put("totalPages", data.getTotalPages());
+                put("totalElements", data.getTotalElements());
+                put("last", data.isLast());
+            }});
         }catch (Exception e){
             e.printStackTrace();
             message = "Something went wrong";

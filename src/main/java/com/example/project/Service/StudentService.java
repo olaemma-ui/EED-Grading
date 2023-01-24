@@ -9,7 +9,6 @@ import com.example.project.Repository.SessionRepo;
 import com.example.project.Repository.StudentRepo;
 import com.example.project.Utils.Utils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -36,14 +35,6 @@ public class StudentService {
     private final ScoreRepo scoreRepo;
     private final SessionRepo sessionRepo;
 
-//    @Autowired
-//    StudentService(Utils utils, StudentRepo studentRepo, DepartmentRepo departmentRepo, ScoreRepo scoreRepo){
-//        this.utils = utils;
-//        this.studentRepo = studentRepo;
-//        this.departmentRepo = departmentRepo;
-//        this.scoreRepo = scoreRepo;
-//    }
-
     public ResponseEntity<Response> addStudents(Student student){
         reset();
         try{
@@ -61,14 +52,13 @@ public class StudentService {
                             student.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
                             int stdCount = studentRepo.findAllBySessionAndDepartment(student.getLvl(), student.getSession().getId(), student.getDepartment().getId()).size();
                             for (int i = stdCount+1; i <= stdCount+student.getTotalStudent(); i++) {
-                                List<Scores> scores = (student.getLvl().equalsIgnoreCase("ND"))
-                                        ?Arrays.asList(setScore("EED 126", student), setScore("EED 216", student))
-                                        :Arrays.asList(setScore("EED 324", student), setScore("EED 414", student));
-
                                 student.setId(utils.genId(studentRepo.allId(), new int[]{3, 8}));
                                 student.setMatric(i);
+                                List<Scores> scores = (student.getLvl().equalsIgnoreCase("ND"))
+                                        ?Arrays.asList(setScore("EED 126", student), setScore("EED 216", student))
+                                        :Arrays.asList(setScore("EED 326", student), setScore("EED 413", student));
+
                                 student.setScores(scores);
-//                                scoreRepo.saveAll(scores);
                                 studentRepo.save(student);
                             }
                             success(null);
@@ -105,7 +95,7 @@ public class StudentService {
                                         student.setMatric(studentData.get("matric"));
                                         List<Scores> scores = (studentData.get("level").equalsIgnoreCase("ND"))
                                             ?Arrays.asList(setScore("EED 126", student), setScore("EED 216", student))
-                                            :Arrays.asList(setScore("EED 324", student), setScore("EED 414", student));
+                                            :Arrays.asList(setScore("EED 326", student), setScore("EED 413", student));
 
                                         student.setId(utils.genId(studentRepo.allId(), new int[]{3, 8}));
                                         student.setScores(scores);
@@ -130,39 +120,30 @@ public class StudentService {
     }
 
 
-    public ResponseEntity<Response> getAllStudent(Integer pageNo, Integer pageSize, String deptId, String level, String sessionId){
+    public ResponseEntity<Response> getAllStudent(Integer pageNo, Integer pageSize, String deptId, String level){
         reset();
         try{
-            message = "Session is required!";
-            Optional.ofNullable(sessionId).ifPresent(
-                    s->{
-                        message = "Department is required!";
-                        Optional.ofNullable(deptId).ifPresent(
-                                id->{
-                                    message = "Level is required!";
-                                    Optional.ofNullable(level).ifPresent(
-                                            lvl->{
-                                                sessionRepo.findById(s).ifPresent(
-                                                        session ->{
-                                                            message = "Invalid department!";
-                                                            departmentRepo.findById(deptId).ifPresent(
-                                                                    department->{
-                                                                        Page<?> data = studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
-                                                                                Optional.ofNullable(pageNo).orElse(0),
-                                                                                Optional.ofNullable(pageSize).orElse(10),
-                                                                                Sort.by(Sort.Direction.ASC, "matric")
-                                                                        ));
-                                                                        success(new HashMap<String, Object>(){{
-                                                                            put("content", data.getContent());
-                                                                            put("pageNumber", data.getNumber());
-                                                                            put("totalPages", data.getTotalPages());
-                                                                            put("totalElements", data.getTotalElements());
-                                                                            put("last", data.isLast());
-                                                                        }});
-                                                                    }
-                                                            );
-                                                        }
-                                                );
+            message = "Department is required!";
+            Optional.ofNullable(deptId).ifPresent(
+                    id->{
+                        message = "Level is required!";
+                        Optional.ofNullable(level).ifPresent(
+                                lvl->{
+                                    message = "Department does not exist!";
+                                    departmentRepo.findById(deptId).ifPresent(
+                                            department->{
+                                                Page<?> data = studentRepo.findAllBySessionAndDepartment(deptId, level, PageRequest.of(
+                                                        Optional.ofNullable(pageNo).orElse(0),
+                                                        Optional.ofNullable(pageSize).orElse(10),
+                                                        Sort.by(Sort.Direction.ASC, "matric")
+                                                ));
+                                                success(new HashMap<String, Object>(){{
+                                                    put("content", data.getContent());
+                                                    put("pageNumber", data.getNumber());
+                                                    put("totalPages", data.getTotalPages());
+                                                    put("totalElements", data.getTotalElements());
+                                                    put("last", data.isLast());
+                                                }});
                                             }
                                     );
                                 }
@@ -210,7 +191,6 @@ public class StudentService {
                 0.0,
                 "--",
                 student
-//                , student.getSession()
         );
     }
 

@@ -26,7 +26,7 @@ public class Department {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Timestamp createdAt;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.DETACH})
     @JoinColumn(name = "sessionId")
     @JsonIgnore
     private Session session;

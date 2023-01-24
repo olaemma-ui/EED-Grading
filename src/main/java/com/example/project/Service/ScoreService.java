@@ -89,15 +89,12 @@ public class ScoreService {
                                                                 Scores scores = mapper.convertValue(e, Scores.class);
                                                                 scores.setCourse(data.get("course").asText().toUpperCase());
                                                                 Optional<Student> student = studentRepo.findByMatric(scores.getMatric());
-
                                                                 if (student.isPresent()){
                                                                     if (student.get().getSession().getId().equalsIgnoreCase(data.get("sessionId").asText())){
 
                                                                         if (student.get().getLvl().equalsIgnoreCase(data.get("level").asText())){
 
                                                                             if(student.get().getDepartment().getId().equalsIgnoreCase(data.get("departmentId").asText())){
-                                                                                System.out.println("4");
-                                                                                scoresList = new ArrayList<>();
                                                                                 scores.setStudent(student.get());
                                                                                 student.get().getScores().forEach(
                                                                                         scr->{
@@ -106,6 +103,7 @@ public class ScoreService {
                                                                                                 scores.setId(scr.getId());
                                                                                                 scores.setTotal();
                                                                                                 scores.setGrade();
+                                                                                                scores.setMatric(student.get().getMatric());
                                                                                                 scores.setCa(scr.getCa() > 0 ? scr.getCa() : scores.getCa());
                                                                                                 scores.setExam(scr.getExam() > 0 ? scr.getExam() : scores.getExam());
                                                                                                 scores.setPractical(scr.getPractical() > 0 ? scr.getPractical() : scores.getPractical());
@@ -120,42 +118,35 @@ public class ScoreService {
                                                                                                }
                                                                                             }
                                                                                             scoresList.add(scores);
+                                                                                            message = errorList.isEmpty() ? "SUCCESS" : "Some records are invalid!";
                                                                                         }
                                                                                 );
-                                                                                student.get().setScores(scoresList);
-                                                                                studentScoreList.add(student.get());
-
                                                                             }else {
-                                                                                failed = true;
                                                                                 msg = "Student not in selected department!";
+                                                                                failed = false;
                                                                             }
-
                                                                         }else {
-                                                                            failed = true;
                                                                             msg = "Matric not in selected level!";
+                                                                            failed = false;
                                                                         }
-
                                                                     }else {
-                                                                        failed = true;
                                                                         msg = "Matric not in the selected session!";
+                                                                        failed = false;
                                                                     }
                                                                 }else {
-                                                                    failed = true;
                                                                     msg = "Invalid matric!";
+                                                                    failed = false;
                                                                 }
-
+                                                                if (!failed){
+                                                                    scoreRepo.saveAll(scoresList);
+                                                                    success(data);
+                                                                }else message = "All data mus be valid before processing";
                                                                 errorList.add(new HashMap<String, String>(){{
                                                                     put("matric", scores.getMatric());
                                                                     put("message", msg);
                                                                 }});
                                                             }
                                                     );
-
-                                                    if (!failed){
-                                                        System.out.println(studentScoreList);
-                                                        studentRepo.saveAll(studentScoreList);
-                                                        success(data);
-                                                    }else message = "All fields must be valid!";
                                                 }
                                                 else {
                                                     failed = true;
@@ -174,14 +165,54 @@ public class ScoreService {
                             );
                         }
                 );
-            }else message = "All fields required and valid!";
+            }
+            else message = "All fields required and valid!";
         }catch (Exception e){
             e.printStackTrace();
+            responseCode = "500";
             message = "Something went wrong";
         }
         return new ResponseEntity<>(new Response(success, responseCode, message, error, data), HttpStatus.OK);
     }
 
+
+    public ResponseEntity<Response> updateScore(Scores scores){
+        reset();
+
+        data = scores;
+        Object[] validate = utils.validate(scores, new String[]{"student", "grade", "total"});
+        error = validate[1];
+
+        if (Boolean.parseBoolean(validate[0].toString())){
+            double total = scores.getExam() + scores.getCa() + scores.getPractical();
+            if (total <= 100 || total >= 0){
+                try{
+                    Optional<Scores> optionalScores = scoreRepo.findById(scores.getId());
+                    message = "Invalid score for student";
+                    optionalScores.ifPresent(
+                            score->{
+                                if (score.getCourse().equalsIgnoreCase(scores.getCourse())){
+                                    score.setPractical(scores.getPractical());
+                                    score.setExam(scores.getExam());
+                                    score.setCa(scores.getCa());
+                                    score.setTotal();
+                                    score.setGrade();
+
+                                    scoreRepo.save(score);
+                                    success(score);
+                                }else message = "Course not matching with ID";
+                            }
+                    );
+                }catch (Exception e){
+                    e.printStackTrace();
+                    responseCode = "500";
+                    message = "Something went wrong!";
+                }
+            }else message = "Total score can only be from [0-100]";
+        }else message = "Invalid/required fields!";
+
+        return new ResponseEntity<>(new Response(success, responseCode, message, error, data), HttpStatus.OK);
+    }
 
     private void success(Object data){
         this.success = true;

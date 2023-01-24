@@ -11,8 +11,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Scores {
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Id private String id;
+    @Id
+    private String id;
 
     private String matric;
 
@@ -29,11 +29,15 @@ public class Scores {
     }
 
     public void setGrade() {
-        this.grade = (total < 25)
-                ? ""
-                : (total < 50)
-                    ? ""
-                    :"";
+        this.grade = (total < 20)
+                ? "HF" :(total < 25) ? "PF"
+                :(total < 30) ? "F" :(total < 35) ? "FF"
+                :(total < 40) ? "EF" :(total < 45) ? "E"
+                :(total < 50) ? "DE" :(total < 55) ? "D"
+                :(total < 60) ? "CD" :(total < 65) ? "C"
+                :(total < 70) ? "BC" :(total < 75) ? "B"
+                :(total < 80) ? "AB" :(total <= 100) ? "A"
+                :"--";
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -45,7 +49,7 @@ public class Scores {
     @ToString.Exclude
     @JsonIgnore
     @JoinColumn(name = "studentId")
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.DETACH)
     private Student student;
 
     @Override

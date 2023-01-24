@@ -1,14 +1,12 @@
 package com.example.project.Controller;
 
 import com.example.project.Message.Response;
+import com.example.project.Model.Scores;
 import com.example.project.Service.ScoreService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/eed_grading/score/")
@@ -22,5 +20,10 @@ public class ScoreController {
     @PostMapping("upload")
     private ResponseEntity<Response> uploadScore(@RequestBody JsonNode node){
         return scoreService.uploadSCore(node);
+    }
+
+    @PutMapping("update")
+    private ResponseEntity<Response> uploadScore(@RequestBody Scores scores){
+        return scoreService.updateScore(scores);
     }
 }

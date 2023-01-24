@@ -30,7 +30,6 @@ public class Student {
     public void setMatric(String matric){
         this.matric = matric;
     }
-
     @Transient
     private String deptId;
 
@@ -48,10 +47,13 @@ public class Student {
 
     @JoinColumn(name = "deptId")
     @JsonIgnore
-    @ManyToOne(cascade = {CascadeType.REMOVE})
+    @ManyToOne(cascade = {CascadeType.DETACH})
     private Department department;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "student",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Scores> scores;
 
     @ManyToOne

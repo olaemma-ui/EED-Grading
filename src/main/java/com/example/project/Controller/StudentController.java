@@ -33,10 +33,9 @@ public class StudentController {
             @RequestParam Integer pageNo,
             @RequestParam Integer pageSize,
             @RequestParam String deptId,
-            @RequestParam String level,
-            @RequestParam String sessionId
+            @RequestParam String level
     ){
-        return studentService.getAllStudent(pageNo, pageSize, deptId, level, sessionId);
+        return studentService.getAllStudent(pageNo, pageSize, deptId, level);
     }
 
     @DeleteMapping("delete")
